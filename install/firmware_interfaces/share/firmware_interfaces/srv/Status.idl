@@ -1,0 +1,21 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from firmware_interfaces/srv/Status.srv
+// generated code does not contain a copyright notice
+
+
+module firmware_interfaces {
+  module srv {
+    @verbatim (language="comment", text=
+      "Request (empty)")
+    struct Status_Request {
+      uint8 structure_needs_at_least_one_member;
+    };
+    @verbatim (language="comment", text=
+      "Response")
+    struct Status_Response {
+      float batt_volt;
+
+      boolean charge_status;
+    };
+  };
+};

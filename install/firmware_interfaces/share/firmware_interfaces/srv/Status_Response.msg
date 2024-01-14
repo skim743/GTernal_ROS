@@ -1,0 +1,4 @@
+
+# Response
+float32 batt_volt
+bool charge_status

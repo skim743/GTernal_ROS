@@ -1,0 +1,6 @@
+{
+  "package_name": "firmware_interfaces",
+  "non_idl_tuples": [
+    "/home/ros2_ws/src/firmware_interfaces:srv/Status.srv"
+  ]
+}
