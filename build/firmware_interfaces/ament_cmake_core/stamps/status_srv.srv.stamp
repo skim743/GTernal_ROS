@@ -1,5 +1,0 @@
-# Request (empty)
----
-# Response
-float32 batt_volt
-string charge_status
