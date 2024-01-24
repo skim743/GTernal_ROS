@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
            'service = firmware.firmware_service:main',
            'client = firmware.firmware_client:main',
+           'publisher = firmware.publish_input:main',
         ],
     },
 )

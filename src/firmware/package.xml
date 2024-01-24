@@ -9,6 +9,7 @@
 
   <depend>rclpy</depend>
   <depend>python3-netifaces</depend>
+  <depend>python3-pyserial</depend>
   <exec_depend>firmware_interfaces</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
