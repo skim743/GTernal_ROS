@@ -1,6 +1,7 @@
 #!/bin/bash
 
-docker run -it \
+sudo docker run -it \
            --rm \
            --net host \
-           firmware_ros:latest \
+	   -w /home/GTernal_ROS \
+           skim743/gternal-ros-amd64:latest
