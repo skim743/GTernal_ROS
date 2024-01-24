@@ -1,7 +1,4 @@
-# Lines 2 and 4 are needed for building the image on a computer instead on a Raspberry Pi
-FROM multiarch/qemu-user-static:x86_64-arm as qemu
-FROM arm64v8/ros:humble-ros-base
-COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
+FROM ros:humble-ros-base
 
 RUN apt-get -y update && apt-get -y upgrade
 
