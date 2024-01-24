@@ -12,7 +12,7 @@ RUN apt-get -y install openssh-client sshpass
 RUN cd /home && \
     git clone https://github.com/skim743/GTernal_ROS.git && \
     cd GTernal_ROS/ && \
-    sudo chown -R pi:pi GTernal_ROS && \
+    . /opt/ros/humble/setup.sh && \
     rosdep install -i --from-path src --rosdistro humble -y && \
     colcon build --packages-select firmware_interfaces && \
     colcon build --packages-select firmware
