@@ -5,7 +5,7 @@ Prototype firmware development repo for GTernal in ROS 2 (Humble). The firmware 
 There are two versions of the Docker image. One of them is built for arm64 processors, and this version is to be run on robots. The other version is built for amd64 processors, and this is run on the main computer.
 
 > [!NOTE]
-> Currently, ROS2 messages cannot be exchanged from Mac or Windows machines to Linux machines and vice versa. This is because Mac and Windows machines run Docker desktop which is pretty much a virtual machine, and Docker desktop does not have the feature to set the network environment for a Docker image to that of the host machine using '--net host' flag.
+> Currently, ROS2 messages cannot be exchanged from Mac or Windows machines to Linux machines and vice versa. This is because Mac and Windows machines run Docker desktop which is pretty much a virtual machine, and Docker desktop does not have the feature to set the network environment for a Docker image to that of the host machine using '--net host' flag. Therefore, if you are using a Mac or Windows machine, all testings need to be done using multiple terminals ssh'd into a robot (RPi).
 
 # How to use
 ## Using the current version of the firmware
