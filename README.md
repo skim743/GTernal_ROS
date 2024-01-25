@@ -34,6 +34,8 @@ ros2 run firmware service
 ```
 
 ### On the main computer (Linux)
+> [!NOTE]
+> If you are using a Mac or Windows machine, simply open another terminal and ssh into the robot. In the new terminal, run 'docker exec <container-id-of-the-running-firmware-image> /bin/bash'. Then, 'cd /home/GTernal_ROS' and follow the instruction below from step 4.
 1. Clone this repository to '~/git/' directory
 ```
 cd git/
@@ -57,7 +59,7 @@ To request the status of a robot
 ```
 ros2 run firmware client <robot-id>
 ```
-(ex) ros2 run firmware client 101
+- (ex) ros2 run firmware client 101
 To publish motor commands to a robot
 ```
 ros2 run firmware publisher <robot-id> <command>
