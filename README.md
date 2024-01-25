@@ -49,7 +49,7 @@ cd GTernal_ROS/amd64
 ```
 ./docker_run.sh
 ```
-This will pull and run the firmware Docker image currently pushed to my account on the Docker Hub.
+This will pull and run the firmware Docker image currently pushed to my account on the Docker Hub.  
 4. Source the ROS 2 environment
 ```
 source install/setup.bash
