@@ -54,15 +54,15 @@ cd GTernal_ROS/amd64
 source install/setup.bash
 ```
 5. Request Status & Publish Commands  
-To request the status of a robot
+- To request the status of a robot
 ```
 ros2 run firmware client <robot-id>
-```
-- (ex) ros2 run firmware client 101  
-To publish commands to a robot
+```  
+(ex) ros2 run firmware client 101  
+- To publish commands to a robot
 ```
 ros2 run firmware publisher <robot-id> <command>
-```
-- (ex:motor command) ros2 run firmware publisher 101 '{"v":0.0,"w":1.0}'
-- (ex:led command) ros2 run firmware publisher 101 '{"right_led":[0,255,0]}'
-- (ex:mixed) ros2 run firmware publisher 101 '{"v":0.0,"w":1.0,"right_led":[0,255,0]}'
+```  
+(ex:motor command) ros2 run firmware publisher 101 '{"v":0.0,"w":1.0}'  
+(ex:led command) ros2 run firmware publisher 101 '{"right_led":[0,255,0]}'  
+(ex:mixed) ros2 run firmware publisher 101 '{"v":0.0,"w":1.0,"right_led":[0,255,0]}'
