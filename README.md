@@ -59,7 +59,7 @@ To request the status of a robot
 ros2 run firmware client <robot-id>
 ```
 - (ex) ros2 run firmware client 101  
-To publish motor commands to a robot
+To publish commands to a robot
 ```
 ros2 run firmware publisher <robot-id> <command>
 ```
