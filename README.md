@@ -45,11 +45,10 @@ git clone https://github.com/skim743/GTernal_ROS.git
 ```
 cd GTernal_ROS/amd64
 ```
-3. Run the firmware Docker image
+3. Run the firmware Docker image. This will pull and run the firmware Docker image currently pushed to my account on the Docker Hub.
 ```
 ./docker_run.sh
 ```
-This will pull and run the firmware Docker image currently pushed to my account on the Docker Hub.  
 4. Source the ROS 2 environment
 ```
 source install/setup.bash
