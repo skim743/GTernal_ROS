@@ -26,8 +26,12 @@ git clone https://github.com/pglotfel/vrpn.git && \
 cd vrpn && mkdir build && cd build && \
 cmake .. && make -j $(($(nproc)-1)) && make install
 
+# VRPN cmake puts this in the wrong place for some reason
+RUN cp /usr/local/lib/python3.1/dist-packages/vrpn.so /usr/lib/python3.10/
+
 RUN python3 -m pip uninstall -y paho-mqtt
 RUN python3 -m pip install paho-mqtt==1.3.1
 
 RUN cd /home/GTernal_ROS/ && \
+    . /opt/ros/humble/setup.sh && \
     colcon build --packages-select vicon_tracker
