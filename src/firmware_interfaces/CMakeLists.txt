@@ -15,7 +15,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Input.msg"
   "msg/Position.msg"
-  "srv/Status.srv"
+  "msg/Status.msg"
 )
 
 if(BUILD_TESTING)

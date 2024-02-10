@@ -2,7 +2,7 @@
 import sys
 import json
 # import vizier.node as node
-# import time
+import time
 # import argparse
 # import queue
 import netifaces
@@ -62,6 +62,7 @@ class RobotStatus(Node):
     def __init__(self, robot_id):
         super().__init__('input_publisher')
         self.publisher_ = self.create_publisher(Input, 'GTernal' + robot_id + '/publish', 10)
+        time.sleep(0.1) # Wait for publisher to set up
 
     def publish_input(self, input):
         input_msg = Input()

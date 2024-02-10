@@ -1,26 +1,23 @@
 from .gritsbotserial import GritsbotSerial
 import os
 import json
-# import vizier.node as node
 import time
-# import argparse
-# import queue
 import netifaces
-# import vizier.log as log
 # import subprocess
 import rclpy
 from rclpy.node import Node
-from firmware_interfaces.srv import Status
+from firmware_interfaces.msg import Status
 from firmware_interfaces.msg import Input
 from ament_index_python.packages import get_package_share_directory
 
-# global logger
-# logger = log.get_logger()
 
 # Constants
 MAX_QUEUE_SIZE = 100
 LOW_BATT_THRESHOLD = 3900.0 # Low battery threshold voltage in mV
 BATT_VOLT_WINDOW = 30 # Time window in seconds for the moving average of the battery voltage. Currently, it is set to 1 sample per second.
+
+global timer_period
+timer_period = 0.033 # In seconds
 
 def get_mac():
     """Gets the MAC address for the robot from the network config info.
@@ -64,7 +61,18 @@ class Robot(Node):
     def __init__(self, robot_id, mac_address):
         super().__init__('GTernal' + robot_id)
         self.serial = None
-        self.service = self.create_service(Status, 'GTernal' + robot_id + '/status', self.status_callback)
+        self.status_data = {'batt_volt': -1, 'charge_status': False, 'bus_volt': -1, 'bus_current': -1, 'power': -1}
+        self.input_data = {'v': 0, 'w': 0, 'left_led': [0, 0, 0], 'right_led': [0, 0, 0]}
+        self.input_time = time.time()
+        self.input_time_old = time.time()
+
+        # Create publisher for status data
+        self.publisher_ = self.create_publisher(Status, 'GTernal' + robot_id + '/status', 10)
+        self.timer_period = timer_period
+        self.timer = self.create_timer(self.timer_period, self.update_status)
+
+        # Create subscriber for input data
+        # self.service = self.create_service(Status, 'GTernal' + robot_id + '/status', self.status_callback)
         self.subscription = self.create_subscription(Input, 'GTernal' + robot_id + '/publish', self.input_callback, 10)
         self.subscription # To prevent unused variable warning
         self.get_logger().info('This is robot: ({0}) with MAC address: ({1})'.format(robot_id, mac_address))
@@ -86,23 +94,36 @@ class Robot(Node):
 
         self.get_logger().info('Acquired serial device.')
 
-    def status_callback(self, request, response):
+    def update_status(self):
         # Serial requests
         request = Request()
         handlers = []
 
-        # Initialize data
-        status_data = {'batt_volt': -1, 'charge_status': False, 'bus_volt': -1, 'bus_current': -1, 'power': -1}
-        # last_input_msg = {}
+        # Reset status data
+        self.status_data = {'batt_volt': -1, 'charge_status': False, 'bus_volt': -1, 'bus_current': -1, 'power': -1}
 
         # Retrieve status data: battery voltage and charging status
         request.add_read_request('batt_volt').add_read_request('charge_status')
-        # request.add_read_request('bus_volt').add_read_request('bus_current').add_read_request('power')
+        request.add_read_request('bus_volt').add_read_request('bus_current').add_read_request('power')
         handlers.append(lambda status, body: handle_read_response('batt_volt', status, body))
         handlers.append(lambda status, body: handle_read_response('charge_status', status, body))
-        # handlers.append(lambda status, body: handle_read_response('bus_volt', status, body))
-        # handlers.append(lambda status, body: handle_read_response('bus_current', status, body))
-        # handlers.append(lambda status, body: handle_read_response('power', status, body))
+        handlers.append(lambda status, body: handle_read_response('bus_volt', status, body))
+        handlers.append(lambda status, body: handle_read_response('bus_current', status, body))
+        handlers.append(lambda status, body: handle_read_response('power', status, body))
+
+        # Check if new input data has been received and update the serial request
+        if (self.input_time is not self.input_time_old):
+            request.add_write_request('motor', {'v': self.input_data['v'], 'w': self.input_data['w']})
+            handlers.append(handle_write_response)
+
+            request.add_write_request('left_led', {'rgb': self.input_data['left_led']})
+            handlers.append(handle_write_response)
+
+            request.add_write_request('right_led', {'rgb': self.input_data['right_led']})
+            handlers.append(handle_write_response)
+
+            # Update the input time
+            self.input_time_old = self.input_time
 
         # Write to serial port
         teensy_response = None
@@ -121,8 +142,8 @@ class Robot(Node):
             body = teensy_response['body']
             # Ensure the appropriate handler gets each teensy_response
             for i, handler in enumerate(handlers):
-                status_data.update(handler(status[i], body[i]))
-            self.get_logger().info('Status data ({})'.format(status_data))
+                self.status_data.update(handler(status[i], body[i]))
+            self.get_logger().info('Status data ({})'.format(self.status_data))
             self.get_logger().info('Response ({})'.format(teensy_response))
             # logger.info('Battery Voltage ({})'.format(status_data['bus_volt']))
             # logger.info('Length of handlers ({})'.format(len(handlers))) # For debugging
@@ -131,119 +152,16 @@ class Robot(Node):
             if(len(handlers) > 0):
                 self.get_logger().critical('Malformed response ({})'.format(teensy_response))
                 self.get_logger().info('Length of handlers ({})'.format(len(handlers)))
-
-#         robot_node.put(status_link, json.dumps(status_data))
-        # for key, value in status_data.items():
-        #     print(key, value)
-        response.batt_volt = status_data['batt_volt']
-        response.charge_status = status_data['charge_status']
-        return response
     
     def input_callback(self, input_msg):
-        # Serial requests
-        request = Request()
-        handlers = []
+        # Update input data
+        self.input_data['v'] = input_msg.v
+        self.input_data['w'] = input_msg.w
+        self.input_data['left_led'] = input_msg.left_led.tolist()
+        self.input_data['right_led'] = input_msg.right_led.tolist()
 
-        # Process input commands
-#         input_msg = None
-#         # Make sure that the queue has few enough messages
-#         if(inputs.qsize() > MAX_QUEUE_SIZE):
-#             logger.critical('Queue of motor messages is too large.')
-
-#         try:
-#             # Clear out the queue
-#             while True:
-#                 input_msg = inputs.get_nowait()
-#         except queue.Empty:
-#             pass
-
-#         if(input_msg is not None):
-#             try:
-#                 input_msg = json.loads(input_msg.decode(encoding='UTF-8'))
-#             except Exception as e:
-#                 logger.warning('Got malformed JSON motor message ({})'.format(input_msg))
-#                 logger.warning(e)
-#                 # Set this to None for the next checks
-#                 input_msg = None
-
-#         # If we got a valid JSON input msg, look for appropriate commands
-#         if(input_msg is not None):
-#             last_input_msg = input_msg
-        self.get_logger().info('Values v: {0}, w: {1}, left_led: {2}, right_led: {3}'.format(input_msg.v, input_msg.w, input_msg.left_led, input_msg.right_led))
-        if(input_msg.v is not None and input_msg.w is not None):
-            # Handle response?
-            request.add_write_request('motor', {'v': input_msg.v, 'w': input_msg.w})
-            handlers.append(handle_write_response)
-
-        if(input_msg.left_led is not None):
-            # left_led = json.dumps(input_msg.left_led)
-            request.add_write_request('left_led', {'rgb': input_msg.left_led.tolist()})
-            handlers.append(handle_write_response)
-
-        if(input_msg.right_led is not None):
-            # right_led = json.dumps(input_msg.right_led)
-            request.add_write_request('right_led', {'rgb': input_msg.right_led.tolist()})
-            handlers.append(handle_write_response)
-
-        # Write to serial port
-        teensy_response = None
-        if(len(handlers) > 0 and self.serial._serial.is_open):
-            try:
-                teensy_response = self.serial.serial_request(request.to_json_encodable())
-            except Exception as e:
-                self.get_logger().critical('Serial exception.')
-                self.get_logger().critical(e)
-
-        # Call handlers
-        # We'll have a status and body for each request
-        if(teensy_response is not None and 'status' in teensy_response and 'body' in teensy_response
-           and len(teensy_response['status']) == len(handlers) and len(teensy_response['body']) == len(handlers)):
-            self.get_logger().info('Response ({})'.format(teensy_response))
-            # logger.info('Battery Voltage ({})'.format(status_data['bus_volt']))
-            # logger.info('Length of handlers ({})'.format(len(handlers))) # For debugging
-        else:
-            # If we should have teensy_responses, but we don't
-            if(len(handlers) > 0):
-                self.get_logger().critical('Malformed response ({})'.format(teensy_response))
-                self.get_logger().info('Length of handlers ({})'.format(len(handlers)))
-
-# def create_node_descriptor(end_point):
-#     """Returns a node descriptor for the robot based on the end_point.
-
-#     The server_alive link is for the robot to check the MQTT connection periodically.
-
-#     Args:
-#         end_point (str): The ID of the robot.
-
-#     Returns:
-#         dict: A node descriptor of the vizier format for the robot.
-
-#     Example:
-#         >>> node_descriptor(1)
-
-#     """
-#     node_descriptor = \
-#         {
-#             'end_point': end_point,
-#             'links':
-#             {
-#                 '/status': {'type': 'DATA'},
-#             },
-#             'requests':
-#             [
-#                 {
-#                     'link': 'matlab_api/'+end_point,
-#                     'type': 'STREAM',
-#                     'required': False
-#                 },
-#             ]
-#         }
-
-#     return node_descriptor
-
-# Responses
-# Battery voltage response
-# response = {'status': 1, 'body': {'bat_volt': 4.3}}
+        # Update input time
+        self.input_time = time.time()
 
 
 class Request:
