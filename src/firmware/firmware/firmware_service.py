@@ -146,11 +146,12 @@ class Robot(Node):
 
             # Publish status data
             msg = Status()
-            msg.batt_volt = self.status_data['batt_volt']
-            msg.charge_status = self.status_data['charge_status']
-            msg.bus_volt = self.status_data['bus_volt']
-            msg.bus_current = self.status_data['bus_current']
-            msg.power = self.status_data['power']
+            msg.batt_volt = float(self.status_data['batt_volt'])
+            msg.charge_status = bool(self.status_data['charge_status'])
+            msg.bus_volt = float(self.status_data['bus_volt'])
+            msg.bus_current = float(self.status_data['bus_current'])
+            msg.power = float(self.status_data['power'])
+            self.publisher_.publish(msg)
 
             # Log status data
             self.get_logger().info('Status data ({})'.format(self.status_data))
