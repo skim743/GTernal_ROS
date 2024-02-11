@@ -143,6 +143,16 @@ class Robot(Node):
             # Ensure the appropriate handler gets each teensy_response
             for i, handler in enumerate(handlers):
                 self.status_data.update(handler(status[i], body[i]))
+
+            # Publish status data
+            msg = Status()
+            msg.batt_volt = self.status_data['batt_volt']
+            msg.charge_status = self.status_data['charge_status']
+            msg.bus_volt = self.status_data['bus_volt']
+            msg.bus_current = self.status_data['bus_current']
+            msg.power = self.status_data['power']
+
+            # Log status data
             self.get_logger().info('Status data ({})'.format(self.status_data))
             self.get_logger().info('Response ({})'.format(teensy_response))
             # logger.info('Battery Voltage ({})'.format(status_data['bus_volt']))
