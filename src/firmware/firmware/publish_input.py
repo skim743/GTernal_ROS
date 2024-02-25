@@ -10,7 +10,7 @@ import netifaces
 # import subprocess
 import rclpy
 from rclpy.node import Node
-from firmware_interfaces.srv import Status
+# from firmware_interfaces.srv import Status
 from firmware_interfaces.msg import Input
 
 # global logger
