@@ -66,3 +66,10 @@ ros2 run firmware publisher <robot-id> <command>
 (ex:motor command) ros2 run firmware publisher 101 '{"v":0.0,"w":1.0}'  
 (ex:led command) ros2 run firmware publisher 101 '{"right_led":[0,255,0]}'  
 (ex:mixed) ros2 run firmware publisher 101 '{"v":0.0,"w":1.0,"right_led":[0,255,0]}'
+
+> [!Note]
+> If './docker_build.sh' fails with the error 'qemu: uncaught target signal 11 (Segmentation fault) - core dumped,' run
+```
+sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes -c yes
+```
+to refresh the qemu image, and run './docker_build.sh' again.
